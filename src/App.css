@@ -1,0 +1,391 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.logo {
+  color: var(--accent);
+}
+
+.tagline {
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px;
+  width: fit-content;
+  margin: 0 auto 26px;
+}
+
+.tabs button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 9px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.tabs button.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(124, 140, 255, 0.35);
+}
+
+/* Cards / shared */
+.prompt-card,
+.feedback,
+.explorer,
+.steps {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Scoreboard */
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 6px;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Prompt */
+.prompt-card {
+  text-align: center;
+  padding: 26px 20px;
+  margin-bottom: 18px;
+}
+
+.prompt-label {
+  margin: 0;
+  color: var(--muted);
+}
+
+.prompt-date {
+  margin: 6px 0 2px;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.timer {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+/* Weekday buttons */
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.weekday-btn {
+  position: relative;
+  background: var(--card-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 10px;
+  font-weight: 600;
+  transition:
+    transform 0.08s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.weekday-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.weekday-btn .kbd {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.weekday-btn.correct {
+  background: var(--good-bg);
+  border-color: var(--good);
+  color: #d6ffee;
+}
+
+.weekday-btn.wrong {
+  background: var(--bad-bg);
+  border-color: var(--bad);
+  color: #ffe0e7;
+}
+
+.weekday-btn.dim {
+  opacity: 0.45;
+}
+
+.weekday-btn:disabled {
+  cursor: default;
+}
+
+/* Feedback */
+.feedback {
+  margin-top: 16px;
+  padding: 18px;
+  border-left-width: 4px;
+}
+
+.feedback.ok {
+  border-left-color: var(--good);
+}
+
+.feedback.no {
+  border-left-color: var(--bad);
+}
+
+.feedback-title {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+}
+
+.feedback-time {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 0;
+  color: #fff;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 22px;
+}
+
+/* Explorer date picker */
+.explorer {
+  padding: 20px;
+}
+
+.date-picker {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.date-picker label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  flex: 1;
+  min-width: 90px;
+}
+
+.date-picker select,
+.date-picker input {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.date-picker select:focus,
+.date-picker input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+/* Steps */
+.steps {
+  list-style: none;
+  counter-reset: none;
+  margin: 0;
+  padding: 8px 20px 20px;
+}
+
+.explorer .steps {
+  border: 0;
+  padding: 8px 0 0;
+}
+
+.quiz-breakdown {
+  margin-top: 16px;
+}
+
+.quiz-breakdown .steps {
+  background: var(--bg-2);
+}
+
+.steps li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.steps li:last-child {
+  border-bottom: 0;
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-head h3 {
+  font-size: 1rem;
+}
+
+.steps p {
+  margin: 6px 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.steps p b {
+  color: var(--text);
+}
+
+.calc {
+  font-family: ui-monospace, monospace;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text) !important;
+  font-size: 0.92rem;
+  line-height: 1.7 !important;
+}
+
+.pill {
+  display: inline-block;
+  background: rgba(124, 140, 255, 0.16);
+  color: #cfd6ff;
+  border: 1px solid var(--border);
+  padding: 1px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.pill-final {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: 0;
+  font-size: 1.05em;
+  padding: 3px 14px;
+}
+
+.result-step .final {
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+/* Footer */
+.app-footer {
+  margin-top: 34px;
+  text-align: center;
+}
+
+.app-footer p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 460px) {
+  .scoreboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .prompt-date {
+    font-size: 1.5rem;
+  }
+}
