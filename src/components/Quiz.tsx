@@ -1,28 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MONTHS, WEEKDAYS, weekdayOf } from '../doomsday'
 import { Breakdown } from './Breakdown'
+import { GuidedQuiz } from './GuidedQuiz'
+import { randomDate, type QuizDate } from './quizDate'
 
-interface QuizDate {
-  year: number
-  monthIndex: number
-  day: number
-}
-
-const MIN_YEAR = 1900
-const MAX_YEAR = 2099
-
-function daysInMonth(year: number, monthIndex: number): number {
-  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate()
-}
-
-function randomDate(): QuizDate {
-  const year = MIN_YEAR + Math.floor(Math.random() * (MAX_YEAR - MIN_YEAR + 1))
-  const monthIndex = Math.floor(Math.random() * 12)
-  const day = 1 + Math.floor(Math.random() * daysInMonth(year, monthIndex))
-  return { year, monthIndex, day }
-}
+type Mode = 'quick' | 'guided'
 
 export function Quiz() {
+  const [mode, setMode] = useState<Mode>('quick')
   const [date, setDate] = useState<QuizDate>(randomDate)
   const [guess, setGuess] = useState<number | null>(null)
   const [showSteps, setShowSteps] = useState(false)
@@ -42,12 +27,12 @@ export function Quiz() {
   const answered = guess !== null
   const isCorrect = guess === answer
 
-  // Live timer until the question is answered.
+  // Live timer until the question is answered (quick mode only).
   useEffect(() => {
-    if (answered) return
+    if (answered || mode === 'guided') return
     const id = setInterval(() => setElapsed(Date.now() - startedAt), 100)
     return () => clearInterval(id)
-  }, [answered, startedAt])
+  }, [answered, startedAt, mode])
 
   const nextQuestion = useCallback(() => {
     setDate(randomDate())
@@ -79,6 +64,7 @@ export function Quiz() {
   // Keyboard shortcuts: 1–7 to answer, Enter/Space for next.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (mode === 'guided') return
       if (!answered && e.key >= '1' && e.key <= '7') {
         submit(Number(e.key) - 1)
       } else if (answered && (e.key === 'Enter' || e.key === ' ')) {
@@ -88,13 +74,36 @@ export function Quiz() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [answered, submit, nextQuestion])
+  }, [answered, submit, nextQuestion, mode])
 
   const accuracy =
     stats.total === 0 ? 0 : Math.round((stats.correct / stats.total) * 100)
 
   return (
     <div className="quiz">
+      <div className="mode-toggle" role="tablist" aria-label="Quiz mode">
+        <button
+          role="tab"
+          aria-selected={mode === 'quick'}
+          className={mode === 'quick' ? 'active' : ''}
+          onClick={() => setMode('quick')}
+        >
+          Quick answer
+        </button>
+        <button
+          role="tab"
+          aria-selected={mode === 'guided'}
+          className={mode === 'guided' ? 'active' : ''}
+          onClick={() => setMode('guided')}
+        >
+          Step by step
+        </button>
+      </div>
+
+      {mode === 'guided' && <GuidedQuiz />}
+
+      {mode === 'quick' && (
+        <>
       <div className="scoreboard">
         <Stat label="Streak" value={stats.streak} />
         <Stat label="Best" value={stats.best} />
@@ -169,6 +178,8 @@ export function Quiz() {
         Tip: press keys <kbd>1</kbd>–<kbd>7</kbd> to answer, then{' '}
         <kbd>Enter</kbd> for the next date.
       </p>
+        </>
+      )}
     </div>
   )
 }

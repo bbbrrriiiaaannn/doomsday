@@ -61,6 +61,95 @@
   border-radius: var(--radius);
 }
 
+/* Quiz mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  width: fit-content;
+  margin: 0 auto 18px;
+}
+
+.mode-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.mode-toggle button.active {
+  background: var(--card-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Guided step */
+.guided-step {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.step-progress-label {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.guided-prompt {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progress-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+}
+
+.progress-dots .dot.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.25);
+}
+
+.progress-dots .dot.ok {
+  background: var(--good);
+  border-color: var(--good);
+}
+
+.progress-dots .dot.no {
+  background: var(--bad);
+  border-color: var(--bad);
+}
+
+.feedback-explain {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.feedback-explain code {
+  color: #cfd6ff;
+}
+
 /* Scoreboard */
 .scoreboard {
   display: grid;
