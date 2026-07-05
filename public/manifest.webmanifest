@@ -1,0 +1,18 @@
+{
+  "name": "Doomsday Trainer",
+  "short_name": "Doomsday",
+  "description": "Practice Conway's Doomsday algorithm for finding the day of the week of any date.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1226",
+  "theme_color": "#7c8cff",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
