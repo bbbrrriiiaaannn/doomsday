@@ -1,4 +1,10 @@
-import { explainDate, WEEKDAYS } from '../doomsday'
+import {
+  anchorForCentury,
+  doomsdayDateForMonth,
+  explainDate,
+  MONTHS,
+  WEEKDAYS,
+} from '../doomsday'
 
 interface Props {
   year: number
@@ -10,6 +16,110 @@ function ord(n: number): string {
   const s = ['th', 'st', 'nd', 'rd']
   const v = n % 100
   return n + (s[(v - 20) % 10] || s[v] || s[0])
+}
+
+// The classic memorized set of century anchors. Because the Gregorian anchor
+// repeats every 400 years, these four cover every century (matched by c mod 4).
+const REFERENCE_CENTURIES = [18, 19, 20, 21]
+
+/** The four "magic numbers" people memorize for recent centuries. */
+function CenturyAnchorReference({ century }: { century: number }) {
+  return (
+    <table className="ref-table">
+      <thead>
+        <tr>
+          <th>Century</th>
+          <th>c mod 4</th>
+          <th>Anchor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {REFERENCE_CENTURIES.map((c) => {
+          const anchor = anchorForCentury(c * 100)
+          const active = c % 4 === ((century % 4) + 4) % 4
+          return (
+            <tr key={c} className={active ? 'active' : ''}>
+              <td>{c}00s</td>
+              <td>{c % 4}</td>
+              <td>{WEEKDAYS[anchor]}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// Short mnemonic for each month's doomsday date, indexed by month.
+const MONTH_MNEMONICS = [
+  'last day of Jan (3rd, or 4th in a leap year)',
+  'last day of Feb (28th, or 29th in a leap year)',
+  'Pi day — 3/14',
+  '4/4',
+  '"9-to-5" — 5/9',
+  '6/6',
+  '"7-11" — 7/11',
+  '8/8',
+  '"9-to-5" — 9/5',
+  '10/10',
+  '"7-11" — 11/7',
+  '12/12',
+]
+
+/** Every month's doomsday date, with the leap-year shift called out. */
+function MonthlyDoomsdayReference({
+  monthIndex,
+  leap,
+}: {
+  monthIndex: number
+  leap: boolean
+}) {
+  return (
+    <table className="ref-table month-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Doomsday date</th>
+          <th>How to remember</th>
+        </tr>
+      </thead>
+      <tbody>
+        {MONTHS.map((name, i) => {
+          const common = doomsdayDateForMonth(i, false)
+          const leapDate = doomsdayDateForMonth(i, true)
+          const shifts = common !== leapDate
+          return (
+            <tr key={name} className={i === monthIndex ? 'active' : ''}>
+              <td>{name}</td>
+              <td>
+                {shifts ? (
+                  <>
+                    {common}
+                    <span className="leap-note">
+                      {' '}
+                      / {leapDate} <em>(leap)</em>
+                    </span>
+                  </>
+                ) : (
+                  common
+                )}
+              </td>
+              <td className="mnemonic-cell">{MONTH_MNEMONICS[i]}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colSpan={3}>
+            This {leap ? 'is' : 'is not'} a leap year, so{' '}
+            {MONTHS[monthIndex]} uses the{' '}
+            <b>{ord(doomsdayDateForMonth(monthIndex, leap))}</b>.
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  )
 }
 
 /**
@@ -38,6 +148,10 @@ export function Breakdown({ year, monthIndex, day }: Props) {
         <p>
           Anchor weekday: <span className="pill">{b.anchorName}</span>
         </p>
+        <p className="ref-label">
+          Recent century "magic numbers" (they repeat every 400 years):
+        </p>
+        <CenturyAnchorReference century={b.century} />
       </li>
 
       <li>
@@ -78,6 +192,8 @@ export function Breakdown({ year, monthIndex, day }: Props) {
           <b>{ord(b.monthDoomsdayDate)}</b>. That date falls on{' '}
           <span className="pill">{b.doomsdayOfYearName}</span>.
         </p>
+        <p className="ref-label">Doomsday date for every month:</p>
+        <MonthlyDoomsdayReference monthIndex={b.monthIndex} leap={b.leap} />
       </li>
 
       <li>

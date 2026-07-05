@@ -369,6 +369,88 @@
   color: var(--text);
 }
 
+/* Reference tables */
+.ref-label {
+  margin-top: 12px !important;
+  font-size: 0.85rem;
+}
+
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-size: 0.86rem;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ref-table th,
+.ref-table td {
+  text-align: left;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ref-table thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(124, 140, 255, 0.06);
+}
+
+.ref-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ref-table tbody td {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ref-table tbody tr.active {
+  background: rgba(124, 140, 255, 0.18);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.ref-table tbody tr.active td {
+  color: #fff;
+  font-weight: 600;
+}
+
+.month-table .mnemonic-cell {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.month-table tr.active .mnemonic-cell {
+  color: #e9ebff;
+}
+
+.leap-note {
+  color: var(--muted);
+}
+
+.leap-note em {
+  font-style: normal;
+  font-size: 0.85em;
+}
+
+.ref-table tfoot td {
+  border-top: 1px solid var(--border);
+  border-bottom: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  background: rgba(124, 140, 255, 0.04);
+}
+
+.ref-table tfoot b {
+  color: var(--text);
+}
+
 /* Footer */
 .app-footer {
   margin-top: 34px;
