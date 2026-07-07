@@ -2,6 +2,7 @@ import {
   anchorForCentury,
   doomsdayDateForMonth,
   explainDate,
+  mod7,
   MONTHS,
   WEEKDAYS,
 } from '../doomsday'
@@ -128,6 +129,10 @@ function MonthlyDoomsdayReference({
  */
 export function Breakdown({ year, monthIndex, day }: Props) {
   const b = explainDate(year, monthIndex, day)
+  // Days to count forward once whole weeks are dropped from each sum.
+  const yearShift = mod7(b.yearSum)
+  const yearWeeks = Math.floor(b.yearSum / 7)
+  const dayShift = mod7(b.dayDelta)
 
   return (
     <ol className="steps">
@@ -146,12 +151,18 @@ export function Breakdown({ year, monthIndex, day }: Props) {
           {5 * b.centuryMod4 + 2} mod 7 = <b>{b.anchor}</b>
         </p>
         <p>
-          Anchor weekday: <span className="pill">{b.anchorName}</span>
+          Counting days as <b>Sunday = 0</b>, Monday = 1, … <b>Saturday = 6</b>,
+          day {b.anchor} is <span className="pill">{b.anchorName}</span>
         </p>
         <p className="ref-label">
-          Recent century "magic numbers" (they repeat every 400 years):
+          In practice you just memorize the recent anchors (they repeat every
+          400 years):
         </p>
         <CenturyAnchorReference century={b.century} />
+        <p className="formula-note">
+          Cues: 1900s = “We-in-dis-day” (Wednesday); 2000s = “Y2K was a
+          Twos-day” (Tuesday).
+        </p>
       </li>
 
       <li>
@@ -160,24 +171,55 @@ export function Breakdown({ year, monthIndex, day }: Props) {
           <h3>Doomsday of the year</h3>
         </div>
         <p>
-          Take the last two digits, <code>y = {b.yearOfCentury}</code>, and
-          apply the "divide by 12" method:
+          Take the last two digits, <b>{b.yearOfCentury}</b>, and ask three
+          quick questions:
         </p>
         <p className="calc">
-          a = ⌊{b.yearOfCentury} / 12⌋ = <b>{b.a}</b>
-          <br />b = {b.yearOfCentury} mod 12 = <b>{b.b}</b>
-          <br />c = ⌊{b.b} / 4⌋ = <b>{b.c}</b>
-          <br />sum = {b.a} + {b.b} + {b.c} = <b>{b.yearSum}</b>
+          How many 12s fit in {b.yearOfCentury}? <b>{b.a}</b>
+          {b.a > 0 && (
+            <>
+              {' '}
+              ({b.a} × 12 = {12 * b.a})
+            </>
+          )}
+          <br />
+          What's left over? {b.yearOfCentury} − {12 * b.a} = <b>{b.b}</b>
+          <br />
+          How many 4s fit in {b.b}? <b>{b.c}</b>
+          <br />
+          Add them up: {b.a} + {b.b} + {b.c} = <b>{b.yearSum}</b>
         </p>
         <p>
-          Add the anchor and reduce mod 7:{' '}
-          <code>
-            ({b.anchor} + {b.yearSum}) mod 7 = {b.doomsdayOfYear}
-          </code>
-        </p>
-        <p>
+          {yearShift === 0 ? (
+            b.yearSum === 0 ? (
+              <>Nothing to add, so the doomsday is the anchor itself: </>
+            ) : (
+              <>
+                {b.yearSum} days is a whole number of weeks, so the doomsday
+                stays on the anchor:{' '}
+              </>
+            )
+          ) : b.yearSum >= 7 ? (
+            <>
+              Drop whole weeks ({b.yearSum} = {yearWeeks} × 7 + {yearShift})
+              and count <b>{yearShift}</b> day{yearShift === 1 ? '' : 's'} on
+              from {b.anchorName}:{' '}
+            </>
+          ) : (
+            <>
+              Count <b>{b.yearSum}</b> day{b.yearSum === 1 ? '' : 's'} on from{' '}
+              {b.anchorName}:{' '}
+            </>
+          )}
           {b.year}'s doomsday is{' '}
           <span className="pill">{b.doomsdayOfYearName}</span>
+        </p>
+        <p className="formula-note">
+          As a formula:{' '}
+          <code>
+            ({b.anchor} + {b.yearSum}) mod 7 = {b.doomsdayOfYear} →{' '}
+            {b.doomsdayOfYearName}
+          </code>
         </p>
       </li>
 
@@ -202,15 +244,41 @@ export function Breakdown({ year, monthIndex, day }: Props) {
           <h3>Count to your day</h3>
         </div>
         <p>
-          Your day is the <b>{ord(b.day)}</b>. Distance from the doomsday date:{' '}
-          <code>
-            {b.day} − {b.monthDoomsdayDate} = {b.dayDelta}
-          </code>
-          .
+          The gap from the {ord(b.monthDoomsdayDate)} to your day, the{' '}
+          <b>{ord(b.day)}</b>: {b.day} − {b.monthDoomsdayDate} ={' '}
+          <b>{b.dayDelta}</b> day{Math.abs(b.dayDelta) === 1 ? '' : 's'}.
         </p>
         <p className="calc">
-          ({b.doomsdayOfYear} + {b.dayDelta}) mod 7 = <b>{b.weekday}</b> →{' '}
-          {WEEKDAYS[b.weekday]}
+          {b.dayDelta === 0 ? (
+            <>
+              It <i>is</i> the doomsday date — <b>{b.weekdayName}</b>.
+            </>
+          ) : dayShift === 0 ? (
+            <>
+              {b.dayDelta} days is a whole number of weeks — same weekday,{' '}
+              <b>{b.weekdayName}</b>.
+            </>
+          ) : (
+            <>
+              {dayShift !== b.dayDelta && (
+                <>
+                  Moving {b.dayDelta} days = moving <b>+{dayShift}</b> once
+                  whole weeks are dropped.
+                  <br />
+                </>
+              )}
+              {b.doomsdayOfYearName} + {dayShift} day
+              {dayShift === 1 ? '' : 's'} = <b>{b.weekdayName}</b>
+            </>
+          )}
+        </p>
+        <p className="formula-note">
+          As a formula:{' '}
+          <code>
+            ({b.doomsdayOfYear} +{' '}
+            {b.dayDelta < 0 ? `(${b.dayDelta})` : b.dayDelta}) mod 7 ={' '}
+            {b.weekday} → {WEEKDAYS[b.weekday]}
+          </code>
         </p>
       </li>
 
