@@ -53,7 +53,7 @@ function CenturyAnchorReference({ century }: { century: number }) {
 
 // Short mnemonic for each month's doomsday date, indexed by month.
 const MONTH_MNEMONICS = [
-  'last day of Jan (3rd, or 4th in a leap year)',
+  'the 3rd, 3 years in 4; the 4th in the 4th (leap) year',
   'last day of Feb (28th, or 29th in a leap year)',
   'Pi day — 3/14',
   '4/4',
