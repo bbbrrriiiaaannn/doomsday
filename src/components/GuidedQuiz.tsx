@@ -2,6 +2,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import {
   doomsdayDateForMonth,
   explainDate,
+  mod7,
   MONTHS,
   WEEKDAYS,
 } from '../doomsday'
@@ -17,6 +18,8 @@ function ord(n: number): string {
 interface Step {
   title: string
   prompt: ReactNode
+  /** How-to-work-it-out guidance, shown on demand before answering. */
+  hint: ReactNode
   /** Choices the learner picks from, as raw values. */
   options: number[]
   /** Label for a given option value. */
@@ -42,12 +45,45 @@ function dateOptions(correct: number): number[] {
 
 function buildSteps(date: QuizDate): Step[] {
   const b = explainDate(date.year, date.monthIndex, date.day)
+  // The number of days to count forward once whole weeks are dropped.
+  const yearShift = mod7(b.yearSum)
+  const dayShift = mod7(b.dayDelta)
+  const absDelta = Math.abs(b.dayDelta)
+
   return [
     {
       title: 'Century anchor',
       prompt: (
         <>
-          What is the <b>anchor day</b> for the <b>{b.century}00s</b>?
+          Start with the century: what is the <b>anchor day</b> of the{' '}
+          <b>{b.century}00s</b>?
+        </>
+      ),
+      hint: (
+        <>
+          <p>
+            Every century has a fixed anchor day. This one is pure memory —
+            learn these four, and they repeat forever (2200s = 1800s, and so
+            on):
+          </p>
+          <ul>
+            <li>
+              1800s → <b>Friday</b>
+            </li>
+            <li>
+              1900s → <b>Wednesday</b> — “We-in-dis-day”
+            </li>
+            <li>
+              2000s → <b>Tuesday</b> — “Y2K was a Twos-day”
+            </li>
+            <li>
+              2100s → <b>Sunday</b>
+            </li>
+          </ul>
+          <p>
+            Prefer to compute it? <code>5 × (century mod 4) + 2</code>, counting
+            days as Sun 0 · Mon 1 · Tue 2 · Wed 3 · Thu 4 · Fri 5 · Sat 6.
+          </p>
         </>
       ),
       options: WEEKDAY_OPTIONS,
@@ -55,10 +91,10 @@ function buildSteps(date: QuizDate): Step[] {
       correct: b.anchor,
       explain: (
         <>
-          <code>
-            (5 × {b.centuryMod4} + 2) mod 7 = {b.anchor}
-          </code>{' '}
-          → the {b.century}00s anchor is <b>{b.anchorName}</b>.
+          The {b.century}00s anchor is <b>{b.anchorName}</b>. Formula check: 5 ×{' '}
+          {b.centuryMod4} + 2 = {5 * b.centuryMod4 + 2}; drop whole weeks to get{' '}
+          {b.anchor}, and day {b.anchor} is {b.anchorName} (Sun&nbsp;0 …
+          Sat&nbsp;6).
         </>
       ),
     },
@@ -66,7 +102,31 @@ function buildSteps(date: QuizDate): Step[] {
       title: "Year's doomsday",
       prompt: (
         <>
-          The anchor is <b>{b.anchorName}</b>. What is <b>{b.year}</b>'s doomsday?
+          Anchor in hand: <b>{b.anchorName}</b>. Now shift it to the year — what
+          is <b>{b.year}</b>'s doomsday?
+        </>
+      ),
+      hint: (
+        <>
+          <p>
+            Take the last two digits, <b>{b.yearOfCentury}</b>, and ask three
+            quick questions:
+          </p>
+          <ol>
+            <li>
+              How many <b>12s</b> fit in {b.yearOfCentury}?
+            </li>
+            <li>
+              How much is <b>left over</b> after those 12s?
+            </li>
+            <li>
+              How many <b>4s</b> fit in that leftover?
+            </li>
+          </ol>
+          <p>
+            Add the three answers, drop whole weeks (7s), and count the
+            remaining days forward from <b>{b.anchorName}</b>.
+          </p>
         </>
       ),
       options: WEEKDAY_OPTIONS,
@@ -74,11 +134,24 @@ function buildSteps(date: QuizDate): Step[] {
       correct: b.doomsdayOfYear,
       explain: (
         <>
-          y = {b.yearOfCentury}: a={b.a}, b={b.b}, c={b.c}, sum={b.yearSum}.{' '}
-          <code>
-            ({b.anchor} + {b.yearSum}) mod 7 = {b.doomsdayOfYear}
-          </code>{' '}
-          → <b>{b.doomsdayOfYearName}</b>.
+          12s in {b.yearOfCentury}: <b>{b.a}</b>. Left over:{' '}
+          <b>{b.b}</b>. 4s in {b.b}: <b>{b.c}</b>. Total: {b.a} + {b.b} + {b.c}{' '}
+          = {b.yearSum}
+          {yearShift !== b.yearSum && (
+            <> — drop whole weeks and {yearShift} remains</>
+          )}
+          .{' '}
+          {yearShift === 0 ? (
+            <>
+              That's a whole number of weeks, so the doomsday stays put:{' '}
+              <b>{b.doomsdayOfYearName}</b>.
+            </>
+          ) : (
+            <>
+              {b.anchorName} + {yearShift} day{yearShift === 1 ? '' : 's'} ={' '}
+              <b>{b.doomsdayOfYearName}</b>.
+            </>
+          )}
         </>
       ),
     },
@@ -86,8 +159,38 @@ function buildSteps(date: QuizDate): Step[] {
       title: 'Month doomsday date',
       prompt: (
         <>
-          Which date is the <b>doomsday date</b> for <b>{b.monthName}</b>
-          {b.leap ? ' in this leap year' : ''}?
+          {b.year}'s doomsday is <b>{b.doomsdayOfYearName}</b>. Which date in{' '}
+          <b>{b.monthName}</b> is a doomsday date
+          {b.leap && b.monthIndex <= 1 ? (
+            <>
+              {' '}
+              — careful, {b.year} is a <b>leap year</b>
+            </>
+          ) : null}
+          ?
+        </>
+      ),
+      hint: (
+        <>
+          <p>The doomsday dates come in memorable families:</p>
+          <ul>
+            <li>
+              Even months double up: <b>4/4, 6/6, 8/8, 10/10, 12/12</b>
+            </li>
+            <li>
+              “Working <b>9-to-5</b> at the <b>7-11</b>”: 5/9, 9/5, 7/11, 11/7
+            </li>
+            <li>
+              March: <b>Pi Day</b>, 3/14
+            </li>
+            <li>
+              January: the <b>3rd</b> three years out of four; the <b>4th</b> in
+              the 4th (leap) year
+            </li>
+            <li>
+              February: the <b>last day</b> — 28th, or 29th in a leap year
+            </li>
+          </ul>
         </>
       ),
       options: dateOptions(b.monthDoomsdayDate),
@@ -95,35 +198,71 @@ function buildSteps(date: QuizDate): Step[] {
       correct: b.monthDoomsdayDate,
       explain: (
         <>
-          {b.monthName}'s doomsday date is the <b>{ord(b.monthDoomsdayDate)}</b>,
-          which falls on <b>{b.doomsdayOfYearName}</b> (the year's doomsday).
+          {b.monthName}'s doomsday date
+          {b.leap && b.monthIndex <= 1 ? ' in a leap year' : ''} is the{' '}
+          <b>{ord(b.monthDoomsdayDate)}</b> — so {b.monthName}{' '}
+          {b.monthDoomsdayDate}, {b.year} is a <b>{b.doomsdayOfYearName}</b>.
         </>
       ),
     },
     {
-      title: 'Your day',
+      title: 'Count to your day',
       prompt: (
         <>
-          {b.monthName} {b.day} is <b>{b.dayDelta}</b> day
-          {Math.abs(b.dayDelta) === 1 ? '' : 's'} from the{' '}
-          {ord(b.monthDoomsdayDate)}. So what weekday is{' '}
+          So {b.monthName} {b.monthDoomsdayDate} is a{' '}
+          <b>{b.doomsdayOfYearName}</b>. Home stretch: what weekday is{' '}
           <b>
             {b.monthName} {b.day}, {b.year}
           </b>
           ?
         </>
       ),
+      hint: (
+        <>
+          <ol>
+            <li>
+              Find the gap: {b.day} − {b.monthDoomsdayDate} = <b>{b.dayDelta}</b>{' '}
+              day{absDelta === 1 ? '' : 's'}.
+            </li>
+            <li>
+              Drop whole weeks — moving 7 days lands on the same weekday.
+            </li>
+            <li>
+              Count what's left forward from <b>{b.doomsdayOfYearName}</b>.
+              Going <i>back</i> n days is the same as going <i>forward</i> 7 − n.
+            </li>
+          </ol>
+        </>
+      ),
       options: WEEKDAY_OPTIONS,
       label: (v) => WEEKDAYS[v],
       correct: b.weekday,
-      explain: (
-        <>
-          <code>
-            ({b.doomsdayOfYear} + {b.dayDelta}) mod 7 = {b.weekday}
-          </code>{' '}
-          → <b>{b.weekdayName}</b>.
-        </>
-      ),
+      explain:
+        b.dayDelta === 0 ? (
+          <>
+            {b.monthName} {b.day} <i>is</i> the doomsday date, so it's a{' '}
+            <b>{b.weekdayName}</b>.
+          </>
+        ) : dayShift === 0 ? (
+          <>
+            The gap of {b.dayDelta} days is a whole number of weeks — same
+            weekday: <b>{b.weekdayName}</b>.
+          </>
+        ) : (
+          <>
+            {b.monthName} {b.day} is {absDelta} day{absDelta === 1 ? '' : 's'}{' '}
+            {b.dayDelta > 0 ? 'after' : 'before'} the{' '}
+            {ord(b.monthDoomsdayDate)}
+            {dayShift !== b.dayDelta && (
+              <>
+                {' '}
+                — the same as <b>{dayShift} forward</b> once whole weeks are
+                dropped
+              </>
+            )}
+            . {b.doomsdayOfYearName} + {dayShift} = <b>{b.weekdayName}</b>.
+          </>
+        ),
     },
   ]
 }
@@ -259,6 +398,11 @@ export function GuidedQuiz() {
             </p>
             <p className="guided-prompt">{step.prompt}</p>
           </div>
+
+          <details className="method-hint" key={`hint-${stepIndex}`}>
+            <summary>Need the method?</summary>
+            <div className="method-hint-body">{step.hint}</div>
+          </details>
 
           <div
             className="weekday-grid"
